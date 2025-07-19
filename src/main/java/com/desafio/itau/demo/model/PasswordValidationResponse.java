@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PasswordValidationResponse {
     
-    private boolean isValid;
+    private boolean valid;
     private String message;
     
     public static PasswordValidationResponse valid(String message) {
@@ -21,5 +21,9 @@ public class PasswordValidationResponse {
     
     public static PasswordValidationResponse invalid(String message) {
         return new PasswordValidationResponse(false, message);
+    }
+    
+    public boolean isValid() {
+        return valid;
     }
 } 

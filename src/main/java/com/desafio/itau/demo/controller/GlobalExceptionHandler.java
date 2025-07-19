@@ -42,6 +42,30 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * Trata erros de JSON inválido
+     */
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<PasswordValidationResponse> handleHttpMessageNotReadableException(
+            org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        log.warn("JSON inválido recebido: {}", ex.getMessage());
+        
+        return ResponseEntity.badRequest()
+            .body(PasswordValidationResponse.invalid("JSON inválido"));
+    }
+    
+    /**
+     * Trata erros de tipo de mídia não suportado
+     */
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<PasswordValidationResponse> handleHttpMediaTypeNotSupportedException(
+            org.springframework.web.HttpMediaTypeNotSupportedException ex) {
+        log.warn("Tipo de mídia não suportado: {}", ex.getMessage());
+        
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+            .body(PasswordValidationResponse.invalid("Tipo de mídia não suportado"));
+    }
+    
+    /**
      * Trata exceções genéricas
      */
     @ExceptionHandler(Exception.class)
