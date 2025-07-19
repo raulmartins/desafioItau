@@ -141,23 +141,80 @@ src/
 - **Service**: Contém a lógica de negócio de validação
 - **Validator**: Implementa as regras específicas de validação
 
-### 2. Princípios SOLID
+### 2. Princípios SOLID Aplicados
 
-- **Single Responsibility**: Cada classe tem uma responsabilidade específica
-- **Open/Closed**: Fácil extensão para novas regras de validação
-- **Dependency Inversion**: Uso de interfaces para baixo acoplamento
+#### **S - Single Responsibility Principle (Princípio da Responsabilidade Única)**
 
-### 3. Clean Code
+- **`PasswordValidationController`**: Responsável apenas por receber requisições HTTP e retornar respostas
+- **`PasswordValidationServiceImpl`**: Responsável apenas pela orquestração da validação
+- **`PasswordValidatorImpl`**: Responsável apenas pela aplicação das regras de validação
+- **`GlobalExceptionHandler`**: Responsável apenas pelo tratamento de exceções
 
-- Nomes descritivos para métodos e variáveis
-- Métodos pequenos e focados
-- Código auto-documentado
+#### **O - Open/Closed Principle (Princípio Aberto/Fechado)**
 
-### 4. Testabilidade
+- **`PasswordValidator`** (interface): Permite extensão sem modificação do código existente
+- Novas regras de validação podem ser implementadas criando novas classes que implementam a interface
+- O sistema está aberto para extensão, mas fechado para modificação
 
-- Testes unitários para cada regra de validação
-- Testes de integração para a API
-- Cobertura de casos edge e cenários de erro
+#### **L - Liskov Substitution Principle (Princípio da Substituição de Liskov)**
+
+- Qualquer implementação de `PasswordValidator` pode substituir `PasswordValidatorImpl` sem quebrar o comportamento
+- Qualquer implementação de `PasswordValidationService` pode substituir `PasswordValidationServiceImpl`
+
+#### **I - Interface Segregation Principle (Princípio da Segregação de Interface)**
+
+- **`PasswordValidator`**: Interface específica para validação de senhas
+- **`PasswordValidationService`**: Interface específica para serviços de validação
+- Interfaces pequenas e focadas, evitando dependências desnecessárias
+
+#### **D - Dependency Inversion Principle (Princípio da Inversão de Dependência)**
+
+- **Controller** depende da interface `PasswordValidationService`, não da implementação
+- **Service** depende da interface `PasswordValidator`, não da implementação
+- Dependências injetadas via construtor, facilitando testes e manutenção
+
+### 3. Qualidades de Arquitetura
+
+#### **Abstração**
+
+- **Interfaces bem definidas**: `PasswordValidator` e `PasswordValidationService` abstraem comportamentos
+- **DTOs**: `PasswordValidationRequest` e `PasswordValidationResponse` abstraem dados de entrada/saída
+- **Camadas de abstração**: Controller → Service → Validator, cada uma com responsabilidade específica
+
+#### **Baixo Acoplamento**
+
+- **Injeção de Dependência**: Classes dependem de interfaces, não de implementações concretas
+- **Separação de Camadas**: Mudanças em uma camada não afetam outras
+- **DTOs**: Isolam a API externa das estruturas internas
+- **Interfaces**: Permitem troca de implementações sem afetar dependentes
+
+#### **Alta Coesão**
+
+- **`PasswordValidatorImpl`**: Todos os métodos trabalham com validação de senhas
+- **`PasswordValidationServiceImpl`**: Todos os métodos trabalham com orquestração de validação
+- **`PasswordValidationController`**: Todos os métodos trabalham com endpoints de validação
+- **`GlobalExceptionHandler`**: Todos os métodos trabalham com tratamento de exceções
+
+#### **Extensibilidade**
+
+- **Novas regras de validação**: Implementar nova classe que implementa `PasswordValidator`
+- **Novos tipos de validação**: Criar novas interfaces e implementações
+- **Novos endpoints**: Adicionar métodos no controller sem afetar existentes
+- **Novos formatos de resposta**: Estender DTOs sem quebrar compatibilidade
+
+### 4. Clean Code
+
+- **Nomes descritivos**: `validatePassword`, `hasRepeatedCharacters`, `containsSpecialCharacter`
+- **Métodos pequenos**: Cada método tem uma responsabilidade específica
+- **Código auto-documentado**: Nomes de métodos e variáveis explicam a intenção
+- **Constantes nomeadas**: `SPECIAL_CHARACTERS`, `MIN_LENGTH`
+
+### 5. Testabilidade
+
+- **Injeção de Dependência**: Facilita mock de dependências nos testes
+- **Interfaces**: Permitem criação de mocks para testes isolados
+- **Métodos pequenos**: Facilitam testes unitários focados
+- **Separação de responsabilidades**: Permitem testes de cada camada independentemente
 
 ## Premissas Assumidas
 
@@ -176,6 +233,7 @@ src/
 - [x] Adicionar documentação Swagger
 - [x] Configurar logging
 - [x] Implementar tratamento de erros
+- [x] Aplicar princípios SOLID e boas práticas de arquitetura
 - [ ] Adicionar autenticação e autorização
 - [ ] Implementar rate limiting
 - [ ] Configurar monitoramento e métricas
