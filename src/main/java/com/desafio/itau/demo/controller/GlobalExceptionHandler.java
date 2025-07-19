@@ -70,6 +70,14 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<PasswordValidationResponse> handleGenericException(Exception ex) {
+        // Não captura exceções relacionadas ao OpenAPI/Swagger
+        if (ex.getClass().getName().contains("springdoc") || 
+            ex.getClass().getName().contains("swagger") ||
+            ex.getClass().getName().contains("openapi") ||
+            ex.getClass().getName().contains("ControllerAdviceBean")) {
+            throw new RuntimeException(ex);
+        }
+        
         log.error("Erro interno da aplicação", ex);
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -1,5 +1,6 @@
 package com.desafio.itau.demo.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,9 +11,19 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Resposta da validação de senha")
 public class PasswordValidationResponse {
     
+    @Schema(
+        description = "Indica se a senha é válida",
+        example = "true"
+    )
     private boolean valid;
+    
+    @Schema(
+        description = "Mensagem descritiva do resultado da validação",
+        example = "Senha válida"
+    )
     private String message;
     
     public static PasswordValidationResponse valid(String message) {
