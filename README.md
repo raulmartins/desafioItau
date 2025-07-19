@@ -23,7 +23,7 @@ Uma senha é considerada válida quando possui:
 - **Maven**
 - **JUnit 5** (para testes)
 - **Lombok** (para redução de boilerplate)
-- **SpringDoc OpenAPI** (para documentação Swagger)
+- **SpringDoc OpenAPI 2.6.0** (para documentação Swagger)
 
 ## Como Executar
 
@@ -44,6 +44,15 @@ cd desafioItau
 ```
 
 A aplicação estará disponível em: `http://localhost:8080`
+
+### URLs Disponíveis
+
+| URL                                           | Descrição                                  | Status         |
+| --------------------------------------------- | ------------------------------------------ | -------------- |
+| `http://localhost:8080/`                      | Página inicial com links para documentação | ✅ Funcionando |
+| `http://localhost:8080/swagger-ui.html`       | Interface interativa do Swagger UI         | ✅ Funcionando |
+| `http://localhost:8080/v3/api-docs`           | Especificação OpenAPI em JSON              | ✅ Funcionando |
+| `http://localhost:8080/api/password/validate` | Endpoint de validação de senhas            | ✅ Funcionando |
 
 ## Documentação da API
 
@@ -71,6 +80,160 @@ Esta especificação pode ser importada em ferramentas como:
 - Postman
 - Insomnia
 - Outras ferramentas de teste de API
+
+### Resolução de Problemas do OpenAPI
+
+Durante o desenvolvimento, foram encontrados e resolvidos alguns problemas relacionados ao OpenAPI:
+
+#### **Problema 1: Incompatibilidade de Versões**
+
+**Sintoma:** Erro `NoSuchMethodError: 'void org.springframework.web.method.ControllerAdviceBean.<init>(java.lang.Object)'`
+
+**Causa:** SpringDoc OpenAPI 2.5.0 não era compatível com Spring Boot 3.5.3
+
+**Solução:** Atualização para SpringDoc OpenAPI 2.6.0
+
+```xml
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.6.0</version>
+</dependency>
+```
+
+#### **Problema 2: Conflito no GlobalExceptionHandler**
+
+**Sintoma:** OpenAPI retornando erro 500 com mensagem "Erro interno do servidor"
+
+**Causa:** O `GlobalExceptionHandler` estava capturando exceções do OpenAPI/Swagger
+
+**Solução:** Adicionada verificação para não interferir com exceções do SpringDoc
+
+```java
+@ExceptionHandler(Exception.class)
+public ResponseEntity<PasswordValidationResponse> handleGenericException(Exception ex) {
+    // Não captura exceções relacionadas ao OpenAPI/Swagger
+    if (ex.getClass().getName().contains("springdoc") ||
+        ex.getClass().getName().contains("swagger") ||
+        ex.getClass().getName().contains("openapi") ||
+        ex.getClass().getName().contains("ControllerAdviceBean")) {
+        throw new RuntimeException(ex);
+    }
+
+    log.error("Erro interno da aplicação", ex);
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(PasswordValidationResponse.invalid("Erro interno do servidor"));
+}
+```
+
+#### **Verificação de Funcionamento**
+
+Para verificar se o OpenAPI está funcionando corretamente:
+
+```bash
+# Testar especificação OpenAPI
+curl http://localhost:8080/v3/api-docs
+
+# Testar Swagger UI
+curl http://localhost:8080/swagger-ui/index.html
+
+# Testar página inicial
+curl http://localhost:8080/
+```
+
+**Resultado Esperado:**
+
+- `/v3/api-docs` deve retornar JSON com a especificação OpenAPI completa
+- `/swagger-ui.html` deve carregar a interface interativa do Swagger
+- `/` deve retornar a página inicial com links para a documentação
+
+#### **Configurações do OpenAPI**
+
+O projeto inclui configurações específicas para o OpenAPI:
+
+**Arquivo:** `src/main/java/com/desafio/itau/demo/config/OpenApiConfig.java`
+
+```java
+@Configuration
+public class OpenApiConfig {
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+            .info(new Info()
+                .title("Validador de Senhas - Desafio Itaú")
+                .description("API REST para validação de senhas seguindo regras específicas de segurança...")
+                .version("1.0.0")
+                .contact(new Contact()
+                    .name("Desafio Itaú")
+                    .url("https://www.itau.com")
+                    .email("desafio@itau.com"))
+                .license(new License()
+                    .name("MIT License")
+                    .url("https://opensource.org/licenses/MIT")))
+            .servers(Arrays.asList(
+                new Server()
+                    .url("http://localhost:8080")
+                    .description("Servidor de Desenvolvimento")));
+    }
+}
+```
+
+**Anotações OpenAPI nos Controllers:**
+
+```java
+@Tag(name = "Validação de Senhas", description = "APIs para validação de senhas seguindo regras de segurança")
+@RestController
+public class PasswordValidationController {
+
+    @Operation(
+        summary = "Validar senha",
+        description = "Valida se uma senha atende aos critérios de segurança estabelecidos..."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Senha validada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos")
+    })
+    @PostMapping("/validate")
+    public ResponseEntity<PasswordValidationResponse> validatePassword(
+        @Valid @RequestBody PasswordValidationRequest request) {
+        // implementação
+    }
+}
+```
+
+**Propriedades de Configuração:**
+
+**Arquivo:** `src/main/resources/application.properties`
+
+```properties
+# Configurações do OpenAPI/Swagger
+springdoc.api-docs.path=/v3/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.operationsSorter=method
+
+# Configurações do Spring MVC
+spring.mvc.static-path-pattern=/static/**
+spring.web.resources.static-locations=classpath:/static/
+spring.mvc.throw-exception-if-no-handler-found=false
+
+# Configurações de logging
+logging.level.com.desafio.itau=INFO
+logging.level.org.springframework.web=WARN
+```
+
+**Dependências do OpenAPI:**
+
+**Arquivo:** `pom.xml`
+
+```xml
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.6.0</version>
+</dependency>
+```
+
+**Importante:** A versão 2.6.0 é necessária para compatibilidade com Spring Boot 3.5.3.
 
 ## Fluxo de Validação
 
