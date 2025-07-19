@@ -72,6 +72,67 @@ Esta especificação pode ser importada em ferramentas como:
 - Insomnia
 - Outras ferramentas de teste de API
 
+## Fluxo de Validação
+
+```mermaid
+flowchart TD
+    A[Cliente envia requisição POST] --> B[PasswordValidationController]
+    B --> C{Validação de entrada}
+    C -->|Inválida| D[Retorna erro 400]
+    C -->|Válida| E[PasswordValidationService]
+    E --> F[PasswordValidator]
+
+    F --> G{Senha é nula/vazia?}
+    G -->|Sim| H[Retorna: Senha inválida]
+    G -->|Não| I{Contém espaços?}
+
+    I -->|Sim| J[Retorna: Senha inválida]
+    I -->|Não| K{Menos de 9 caracteres?}
+
+    K -->|Sim| L[Retorna: Senha inválida]
+    K -->|Não| M{Contém dígito?}
+
+    M -->|Não| N[Retorna: Senha inválida]
+    M -->|Sim| O{Contém minúscula?}
+
+    O -->|Não| P[Retorna: Senha inválida]
+    O -->|Sim| Q{Contém maiúscula?}
+
+    Q -->|Não| R[Retorna: Senha inválida]
+    Q -->|Sim| S{Contém caractere especial?}
+
+    S -->|Não| T[Retorna: Senha inválida]
+    S -->|Sim| U{Contém caracteres repetidos?}
+
+    U -->|Sim| V[Retorna: Senha inválida]
+    U -->|Não| W[Retorna: Senha válida]
+
+    H --> X[PasswordValidationResponse]
+    J --> X
+    L --> X
+    N --> X
+    P --> X
+    R --> X
+    T --> X
+    V --> X
+    W --> X
+
+    X --> Y[Cliente recebe resposta JSON]
+    D --> Y
+
+    style A fill:#e1f5fe
+    style Y fill:#e8f5e8
+    style W fill:#c8e6c9
+    style H fill:#ffcdd2
+    style J fill:#ffcdd2
+    style L fill:#ffcdd2
+    style N fill:#ffcdd2
+    style P fill:#ffcdd2
+    style R fill:#ffcdd2
+    style T fill:#ffcdd2
+    style V fill:#ffcdd2
+```
+
 ## API Endpoints
 
 ### POST /api/password/validate
@@ -131,6 +192,54 @@ src/
         ├── controller/     # Testes de integração
         ├── service/        # Testes unitários
         └── validator/      # Testes de validação
+```
+
+## Arquitetura da Aplicação
+
+```mermaid
+graph TB
+    subgraph "Cliente"
+        A[Cliente HTTP]
+    end
+
+    subgraph "Camada de Apresentação"
+        B[PasswordValidationController]
+        C[GlobalExceptionHandler]
+    end
+
+    subgraph "Camada de Serviço"
+        D[PasswordValidationService]
+        E[PasswordValidationServiceImpl]
+    end
+
+    subgraph "Camada de Validação"
+        F[PasswordValidator]
+        G[PasswordValidatorImpl]
+    end
+
+    subgraph "Camada de Modelo"
+        H[PasswordValidationRequest]
+        I[PasswordValidationResponse]
+    end
+
+    A -->|POST /api/password/validate| B
+    B -->|Validação de entrada| C
+    B -->|Delega validação| D
+    D -->|Implementa| E
+    E -->|Usa| F
+    F -->|Implementa| G
+    B -->|Recebe| H
+    B -->|Retorna| I
+
+    style A fill:#e3f2fd
+    style B fill:#fff3e0
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+    style E fill:#f3e5f5
+    style F fill:#e8f5e8
+    style G fill:#e8f5e8
+    style H fill:#fce4ec
+    style I fill:#fce4ec
 ```
 
 ## Decisões de Arquitetura
