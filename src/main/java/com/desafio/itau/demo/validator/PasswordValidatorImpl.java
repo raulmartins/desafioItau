@@ -97,7 +97,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
     private boolean containsSpecialCharacter(String password) {
         return password.chars()
             .mapToObj(ch -> (char) ch)
-            .anyMatch(SPECIAL_CHARACTERS::contains);
+            .anyMatch(ch -> SPECIAL_CHARACTERS.indexOf(ch) >= 0);
     }
     
     /**
