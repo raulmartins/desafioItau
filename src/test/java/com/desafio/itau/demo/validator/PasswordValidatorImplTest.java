@@ -171,17 +171,17 @@ class PasswordValidatorImplTest {
     @ParameterizedTest
     @ValueSource(strings = {
         "AbTp9!fok",
-        "MyP@ssw0rd",
-        "Str0ng!Pass",
-        "C0mpl3x!Pwd",
-        "S3cur3!Pass"
+        "XyZ1@2#3$",
+        "QwErTy1!2",
+        "1aA!2bB@3",
+        "ZxCvBnM1!"
     })
     @DisplayName("Should return valid for various correct passwords")
     void shouldReturnValidForVariousCorrectPasswords(String password) {
         PasswordValidationResponse response = passwordValidator.validate(password);
         
         assertThat(response.isValid()).isTrue()
-            .withFailMessage("Password '%s' should be valid", password);
+            .withFailMessage("Password '%s' should be valid, but got: %s", password, response.getMessage());
         assertThat(response.getMessage()).isEqualTo("Senha válida");
     }
     

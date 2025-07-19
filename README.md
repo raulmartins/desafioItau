@@ -23,6 +23,7 @@ Uma senha é considerada válida quando possui:
 - **Maven**
 - **JUnit 5** (para testes)
 - **Lombok** (para redução de boilerplate)
+- **SpringDoc OpenAPI** (para documentação Swagger)
 
 ## Como Executar
 
@@ -43,6 +44,33 @@ cd desafioItau
 ```
 
 A aplicação estará disponível em: `http://localhost:8080`
+
+## Documentação da API
+
+### Swagger UI
+
+A documentação interativa da API está disponível através do Swagger UI:
+
+**URL:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+O Swagger UI permite:
+
+- Visualizar todos os endpoints disponíveis
+- Testar as APIs diretamente no navegador
+- Ver exemplos de request/response
+- Explorar os modelos de dados
+
+### OpenAPI Specification
+
+A especificação OpenAPI em formato JSON está disponível em:
+
+**URL:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+
+Esta especificação pode ser importada em ferramentas como:
+
+- Postman
+- Insomnia
+- Outras ferramentas de teste de API
 
 ## API Endpoints
 
@@ -141,10 +169,14 @@ src/
 
 ## Próximos Passos
 
-- [ ] Implementar validador de senhas
-- [ ] Criar controller REST
-- [ ] Implementar testes unitários
-- [ ] Implementar testes de integração
-- [ ] Adicionar documentação Swagger
-- [ ] Configurar logging
-- [ ] Implementar tratamento de erros
+- [x] Implementar validador de senhas
+- [x] Criar controller REST
+- [x] Implementar testes unitários
+- [x] Implementar testes de integração
+- [x] Adicionar documentação Swagger
+- [x] Configurar logging
+- [x] Implementar tratamento de erros
+- [ ] Adicionar autenticação e autorização
+- [ ] Implementar rate limiting
+- [ ] Configurar monitoramento e métricas
+- [ ] Deploy em ambiente de produção
